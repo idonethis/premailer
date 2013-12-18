@@ -183,14 +183,14 @@ class Premailer(object):
 
         rules = []
 
-        for index, style in enumerate(CSSSelector('style')(page)):
-            # If we have a media attribute whose value is anything other than
-            # 'screen', ignore the ruleset.
-            media = style.attrib.get('media')
-            if media and media != 'screen':
+        for style in CSSSelector('style')(page):
+            if style.attrib.get('premailer', '') == 'ignore':
+                del style.attrib['premailer']
                 continue
 
-            these_rules, these_leftover = self._parse_style_rules(style.text, index)
+            css_body = etree.tostring(style)
+            css_body = css_body.split('>')[1].split('</')[0]
+            these_rules, these_leftover = self._parse_style_rules(css_body)
             rules.extend(these_rules)
 
             parent_of_style = style.getparent()
